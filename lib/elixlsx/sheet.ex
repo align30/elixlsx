@@ -29,6 +29,7 @@ defmodule Elixlsx.Sheet do
             merge_cells: [],
             auto_filter: nil,
             pane_freeze: nil,
+            page_setup: %{},
             show_grid_lines: true,
             data_validations: []
 
@@ -42,6 +43,7 @@ defmodule Elixlsx.Sheet do
           merge_cells: [{String.t(), String.t()}],
           auto_filter: {String.t(), String.t()} | nil,
           pane_freeze: {number, number} | nil,
+          page_setup: %{String.t() => String.t()},
           show_grid_lines: boolean(),
           data_validations: list({String.t(), String.t(), list(String.t())})
         }

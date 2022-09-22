@@ -343,6 +343,20 @@ defmodule Elixlsx.XMLTemplates do
     """
   end
 
+  defp xl_page_setup(%{}) do
+    "<pageSetup/>"
+  end
+
+  defp xl_page_setup(opts) do
+    orientation = opts |> Map.get("orientation", "portrait")
+    horizontal_dpi = opts |> Map.get("horizontal_dpi", "0")
+    vertial_dpi = opts |> Map.get("vertial_dpi", "0")
+
+    """
+    <pageSetup orientation="#{orientation}" horizontalDpi="#{horizontal_dpi}" verticalDpi="#{vertial_dpi}"/>
+    """
+  end
+
   defp xl_sheet_rows(data, row_heights, grouping_info, wci) do
     rows =
       Enum.zip(data, 1..length(data))
@@ -512,6 +526,7 @@ defmodule Elixlsx.XMLTemplates do
       """ <>
       xl_auto_filter(sheet.auto_filter) <>
       xl_merge_cells(sheet.merge_cells) <>
+      xl_page_setup(sheet.page_setup) <>
       make_data_validations(sheet.data_validations) <>
       """
       <pageMargins left="0.75" right="0.75" top="1" bottom="1.0" header="0.5" footer="0.5"/>

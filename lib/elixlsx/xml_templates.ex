@@ -317,6 +317,16 @@ defmodule Elixlsx.XMLTemplates do
     """
   end
 
+  defp xl_auto_filter(nil) do
+    ""
+  end
+
+  defp xl_auto_filter({fromCell, toCell}) do
+    """
+    <autoFilter ref="#{fromCell}:#{toCell}"/>
+    """
+  end
+
   defp xl_merge_cells([]) do
     ""
   end
@@ -500,6 +510,7 @@ defmodule Elixlsx.XMLTemplates do
       ~S"""
       </sheetData>
       """ <>
+      xl_auto_filter(sheet.auto_filter) <>
       xl_merge_cells(sheet.merge_cells) <>
       make_data_validations(sheet.data_validations) <>
       """

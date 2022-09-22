@@ -27,6 +27,7 @@ defmodule Elixlsx.Sheet do
             group_cols: [],
             group_rows: [],
             merge_cells: [],
+            auto_filter: nil,
             pane_freeze: nil,
             show_grid_lines: true,
             data_validations: []
@@ -39,6 +40,7 @@ defmodule Elixlsx.Sheet do
           group_cols: list(rowcol_group),
           group_rows: list(rowcol_group),
           merge_cells: [{String.t(), String.t()}],
+          auto_filter: {String.t(), String.t()} | nil,
           pane_freeze: {number, number} | nil,
           show_grid_lines: boolean(),
           data_validations: list({String.t(), String.t(), list(String.t())})

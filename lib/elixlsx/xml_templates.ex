@@ -343,10 +343,6 @@ defmodule Elixlsx.XMLTemplates do
     """
   end
 
-  defp xl_page_setup(%{}) do
-    "<pageSetup/>"
-  end
-
   defp xl_page_setup(opts) do
     orientation = opts |> Map.get("orientation", "portrait")
     horizontal_dpi = opts |> Map.get("horizontal_dpi", "0")
@@ -355,6 +351,10 @@ defmodule Elixlsx.XMLTemplates do
     """
     <pageSetup orientation="#{orientation}" horizontalDpi="#{horizontal_dpi}" verticalDpi="#{vertial_dpi}"/>
     """
+  end
+
+  defp xl_page_setup(_) do
+    "<pageSetup/>"
   end
 
   defp xl_sheet_rows(data, row_heights, grouping_info, wci) do

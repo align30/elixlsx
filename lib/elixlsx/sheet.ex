@@ -27,7 +27,12 @@ defmodule Elixlsx.Sheet do
             group_cols: [],
             group_rows: [],
             merge_cells: [],
+            auto_filter: nil,
             pane_freeze: nil,
+            page_header: nil,
+            page_footer: nil,
+            page_margins: %{},
+            page_setup: %{},
             show_grid_lines: true,
             data_validations: []
 
@@ -39,7 +44,12 @@ defmodule Elixlsx.Sheet do
           group_cols: list(rowcol_group),
           group_rows: list(rowcol_group),
           merge_cells: [{String.t(), String.t()}],
+          auto_filter: {String.t(), String.t()} | nil,
           pane_freeze: {number, number} | nil,
+          page_header: String.t() | nil,
+          page_footer: String.t() | nil,
+          page_margins: %{String.t() => String.t()},
+          page_setup: %{String.t() => String.t()},
           show_grid_lines: boolean(),
           data_validations: list({String.t(), String.t(), list(String.t()) | String.t()})
         }
@@ -222,7 +232,7 @@ defmodule Elixlsx.Sheet do
     %{sheet | pane_freeze: nil}
   end
 
-  @spec add_data_validations(Sheet.t(), String.t(), String.t(), String.t() | list(String.t())) :: Sheet.t()
+  @spec add_data_validations(Sheet.t(), String.t(), String.t(), list(String.t())) :: Sheet.t()
   def add_data_validations(sheet, start_cell, end_cell, values) do
     %{sheet | data_validations: [{start_cell, end_cell, values} | sheet.data_validations]}
   end

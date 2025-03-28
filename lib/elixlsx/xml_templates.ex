@@ -319,6 +319,16 @@ defmodule Elixlsx.XMLTemplates do
     """
   end
 
+  defp xl_auto_filter(nil) do
+    ""
+  end
+
+  defp xl_auto_filter({fromCell, toCell}) do
+    """
+    <autoFilter ref="#{fromCell}:#{toCell}"/>
+    """
+  end
+
   defp xl_merge_cells([]) do
     ""
   end
@@ -329,6 +339,55 @@ defmodule Elixlsx.XMLTemplates do
       #{Enum.map(merge_cells, fn {fromCell, toCell} -> "<mergeCell ref=\"#{fromCell}:#{toCell}\"/>" end)}
     </mergeCells>
     """
+  end
+
+  defp xl_page_header_footer(nil, nil) do
+    ""
+  end
+
+  defp xl_page_header_footer(page_header, page_footer) do
+    "<headerFooter>" <> xl_page_header(page_header) <> xl_page_footer(page_footer) <> "</headerFooter>"
+  end
+
+  def xl_page_header(nil) do
+    ""
+  end
+
+  def xl_page_header(value) do
+    "<oddHeader>" <> value <> "</oddHeader>"
+  end
+
+  def xl_page_footer(nil) do
+    ""
+  end
+
+  def xl_page_footer(value) do
+    "<oddFooter>" <> value <> "</oddFooter>"
+  end
+
+  defp xl_page_margins(opts) do
+    left = opts |> Map.get("left", "0.75")
+    right = opts |> Map.get("right", "0.75")
+    top = opts |> Map.get("top", "1")
+    bottom = opts |> Map.get("bottom", "1.0")
+    header = opts |> Map.get("header", "0.5")
+    footer = opts |> Map.get("footer", "0.5")
+
+    """
+    <pageMargins left="#{left}" right="#{right}" top="#{top}" bottom="#{bottom}" header="#{header}" footer="#{footer}"/>
+    """
+  end
+
+  defp xl_page_setup(opts) do
+    if opts |> Enum.empty?() do
+      "<pageSetup/>"
+    else
+      orientation = opts |> Map.get("orientation", "portrait")
+
+      """
+      <pageSetup orientation="#{orientation}"/>
+      """
+    end
   end
 
   defp xl_sheet_rows(data, row_heights, grouping_info, wci) do
@@ -496,10 +555,13 @@ defmodule Elixlsx.XMLTemplates do
       ~S"""
       </sheetData>
       """ <>
+      xl_auto_filter(sheet.auto_filter) <>
       xl_merge_cells(sheet.merge_cells) <>
       make_data_validations(sheet.data_validations) <>
+      xl_page_margins(sheet.page_margins) <>
+      xl_page_setup(sheet.page_setup) <>
+      xl_page_header_footer(sheet.page_header, sheet.page_footer) <>
       """
-      <pageMargins left="0.75" right="0.75" top="1" bottom="1.0" header="0.5" footer="0.5"/>
       </worksheet>
       """
   end
@@ -775,6 +837,31 @@ defmodule Elixlsx.XMLTemplates do
     |> Enum.map_join(&make_xl_workbook_xml_sheet_entry/1)
   end
 
+  defp xl_workbook_view(%{"x" => x, "y" => y, "width" => width, "height" => height} = _window) do
+    """
+    <workbookView activeTab="0" xWindow="#{x}" yWindow="#{y}" windowWidth="#{width}" windowHeight="#{height}"/>
+    """
+  end
+
+  defp xl_workbook_view(_window) do
+    "<workbookView activeTab=\"0\"/>"
+  end
+
+  defp xl_defined_names(
+         %{"sheet_id" => sheet_id, "sheet_name" => sheet_name, "row_start" => row_start, "row_end" => row_end} =
+           _print_titles
+       ) do
+    """
+    <definedNames>
+      <definedName name="_xlnm.Print_Titles" localSheetId="#{sheet_id}">#{sheet_name}!$#{row_start}:$#{row_end}</definedName>
+    </definedNames>
+    """
+  end
+
+  defp xl_defined_names(_) do
+    ""
+  end
+
   @doc ~S"""
   Return the data for /xl/workbook.xml
   """
@@ -784,13 +871,16 @@ defmodule Elixlsx.XMLTemplates do
     <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
     <fileVersion appName="Calc"/>
     <bookViews>
-      <workbookView activeTab="0"/>
-    </bookViews>
-    <sheets>
     """ <>
+      xl_workbook_view(data.window) <>
+      """
+      </bookViews>
+      <sheets>
+      """ <>
       workbook_sheet_entries(data.sheets, sci) <>
+      "</sheets>" <>
+      xl_defined_names(data.print_titles) <>
       ~S"""
-      </sheets>
       <calcPr fullCalcOnLoad="1" iterateCount="100" refMode="A1" iterate="false" iterateDelta="0.001"/>
       </workbook>
       """
